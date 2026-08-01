@@ -1,0 +1,54 @@
+[project]
+name = "django-identity"
+version = "0.1.0.1"
+authors = [
+  { name="Oleg Zamesov", email="o.zamesov@yandex.ru" },
+]
+description = "Custom django authorize"
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: MacOS",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: POSIX :: Linux",
+    "Development Status :: 4 - Beta",
+]
+
+[project.urls]
+Homepage = "https://github.com/Zamesov26/django-identity"
+AuthorGitHub = "https://github.com/Zamesov26"
+
+[tool.ruff]
+line-length = 88
+extend-exclude = [
+    "**/__pycache__/**",
+    ".venv/",
+    "venv/",
+    ".pytest_cache/",
+    ".mypy_cache/",
+    ".ruff_cache/",
+]
+
+[tool.ruff.lint]
+ignore = ["E501"]
+select = [
+    "E", # pycodestyle
+    "F", # Pyflakes
+    "UP", # pyupgrade
+    "B", # flake8-bugbear
+    "SIM", # flake8-simplify
+    "I", # isort
+    "C", # flake8-comprehensions
+]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "lf"
+
+[tool.ruff.lint.flake8-quotes]
+docstring-quotes = "double"
+inline-quotes = "double"
+multiline-quotes = "double"
