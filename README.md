@@ -67,6 +67,9 @@ class BaseAuthenticationProvider(AuthenticationProvider):
         )
 ```
 
+## для самоопределения нужно в базу добавить наш публичный ключ
+
+
 ## Настройки
 ```settings.py
 IDENTITY = {
