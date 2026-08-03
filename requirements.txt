@@ -1,2 +1,2 @@
-django==6.0.*
-pyjwt==2.13.*
+django>=5.2
+PyJWT[crypto]==2.13.*

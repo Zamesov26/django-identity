@@ -2,7 +2,8 @@ from django.contrib.auth.models import AnonymousUser
 from django.http import HttpRequest
 
 from django_identity.exceptions import IdentityError
-from django_identity.providers.registry import IdentityProviderRegistry
+from django_identity.identity.registry import IdentityProviderRegistry
+from django_identity.identity.user_resolver import get_user_resolver
 from django_identity.services.credential_extractor import CredentialExtractor
 
 
@@ -35,7 +36,10 @@ class IdentityMiddleware:
 
                 request.identity = identity
                 request.actor = identity.actor
-                # request.user = identity.user
+                request.user = (
+                    get_user_resolver().resolve(identity)
+                    or AnonymousUser()
+                )
 
         except IdentityError as exc:
             request.identity_error = exc

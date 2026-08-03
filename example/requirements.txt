@@ -1,0 +1,6 @@
+-e ..
+
+Django==5.2.*
+djangorestframework==3.17.*
+drf-spectacular==0.28.0
+drf-spectacular-sidecar==2025.2.1

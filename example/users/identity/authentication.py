@@ -1,4 +1,4 @@
-from django_identity.authentication.base import AuthenticationProvider
+from django_identity.authentication.registry import AuthenticationProviderRegistry
 from django_identity.services.access_token import AccessTokenService
 from django_identity.services.refresh_token import RefreshTokenService
 from django_identity.tokens import AuthTokens
@@ -15,25 +15,18 @@ class LoginService:
     """
 
     @classmethod
-    def login(
+    def authenticate(
         cls,
         credentials,
     ) -> AuthTokens:
         """
         Выполняет аутентификацию и выпускает новую пару токенов.
         """
+        provider = AuthenticationProviderRegistry.get()
+        actor = provider.authenticate(credentials)
 
-        actor = AuthenticationProvider.authenticate(
-            credentials,
-        )
-
-        refresh = RefreshTokenService.issue(
-            actor,
-        )
-
-        access = AccessTokenService.issue(
-            actor,
-        )
+        refresh = RefreshTokenService.issue(actor)
+        access = AccessTokenService.issue(actor)
 
         return AuthTokens(
             access_token=access,

@@ -1,6 +1,6 @@
 [project]
 name = "django-identity"
-version = "0.1.0.1"
+version = "0.0.0"
 authors = [
   { name="Oleg Zamesov", email="o.zamesov@yandex.ru" },
 ]

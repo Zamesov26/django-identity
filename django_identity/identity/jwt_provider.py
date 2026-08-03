@@ -3,10 +3,10 @@ from django.conf import settings
 from django.http import HttpRequest
 
 from django_identity.actor import ActorContext
-from django_identity.authentication.credential import Credential
-from django_identity.authentication.identity import Identity
+from django_identity.credentials import Credential
 from django_identity.exceptions import CredentialExpired, InvalidCredential
 from django_identity.identity.base import IdentityProvider
+from django_identity.identity.identity import Identity
 from django_identity.identity.registry import IdentityProviderRegistry
 from django_identity.models import IdentityTrustedIssuer
 
@@ -77,7 +77,7 @@ class JWTIdentityProvider(IdentityProvider):
                 token,
                 key=issuer.public_key,
                 algorithms=[issuer.algorithm],
-                audience=settings.IDENTITY["AUDIENCE"],
+                audience=settings.IDENTITY["JWT"]["AUDIENCE"],
                 issuer=issuer.issuer,
                 options={
                     "require": [

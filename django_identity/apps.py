@@ -6,4 +6,4 @@ class AuthConfig(AppConfig):
     name = "django_identity"
 
     def ready(self):
-        from django_identity.authentication import jwt_provider  # noqa: F401
+        from django_identity.identity import jwt_provider  # noqa: F401

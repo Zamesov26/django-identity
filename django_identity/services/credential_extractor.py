@@ -1,6 +1,6 @@
 from django.http import HttpRequest
 
-from django_identity.authentication.credential import Credential
+from django_identity.credentials import Credential
 
 
 class CredentialExtractor:

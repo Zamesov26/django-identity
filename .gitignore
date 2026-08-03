@@ -2,4 +2,8 @@
 .idea
 /dist/
 /src/test.py
+db.*
+keys/
+
+django_identity.egg-info/
 **/__pycache__/

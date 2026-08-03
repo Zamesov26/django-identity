@@ -2,8 +2,8 @@ from abc import ABC, abstractmethod
 
 from django.http import HttpRequest
 
-from django_identity.authentication.credential import Credential
-from django_identity.authentication.identity import Identity
+from django_identity.credentials import Credential
+from django_identity.identity.identity import Identity
 
 
 class IdentityProvider(ABC):

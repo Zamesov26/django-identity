@@ -3,10 +3,10 @@ from django.contrib.auth import authenticate
 
 from django_identity.actor import ActorContext
 from django_identity.authentication.base import AuthenticationProvider
-from django_identity.authentication.credential import UsernamePasswordCredentials
 from django_identity.authentication.registry import (
     AuthenticationProviderRegistry,
 )
+from django_identity.credentials import UsernamePasswordCredentials
 from django_identity.exceptions import InvalidCredentials
 
 
