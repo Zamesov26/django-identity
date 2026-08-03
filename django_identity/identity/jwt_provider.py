@@ -65,9 +65,7 @@ class JWTIdentityProvider(IdentityProvider):
                 is_active=True,
             )
         except IdentityTrustedIssuer.DoesNotExist:
-            raise InvalidCredential(
-                f'Unknown issuer "{issuer}".'
-            ) from None
+            raise InvalidCredential(f'Unknown issuer "{issuer}".') from None
 
     @staticmethod
     def _verify(
@@ -91,9 +89,7 @@ class JWTIdentityProvider(IdentityProvider):
             )
 
         except jwt.ExpiredSignatureError as exc:
-            raise CredentialExpired(
-                "Credential expired."
-            ) from exc
+            raise CredentialExpired("Credential expired.") from exc
 
         except jwt.PyJWTError as exc:
             raise InvalidCredential(
@@ -109,28 +105,20 @@ class JWTIdentityProvider(IdentityProvider):
         actor_type = claims.get("actor_type")
 
         if actor_type not in ("human", "system"):
-            raise InvalidCredential(
-                "Invalid actor_type."
-            )
+            raise InvalidCredential("Invalid actor_type.")
 
         if actor_type == "human":
             if not issuer.allow_human:
-                raise InvalidCredential(
-                    "Issuer cannot authenticate human actors."
-                )
+                raise InvalidCredential("Issuer cannot authenticate human actors.")
 
             subject = claims.get("sub")
 
             if not subject:
-                raise InvalidCredential(
-                    "Missing subject."
-                )
+                raise InvalidCredential("Missing subject.")
 
         else:
             if not issuer.allow_system:
-                raise InvalidCredential(
-                    "Issuer cannot authenticate system actors."
-                )
+                raise InvalidCredential("Issuer cannot authenticate system actors.")
 
             subject = claims.get("sub")
 

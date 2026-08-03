@@ -18,8 +18,8 @@ class Credential:
 
     scheme: str
     value: str
-    
-    
+
+
 @dataclass(frozen=True, slots=True)
 class UsernamePasswordCredentials:
     """

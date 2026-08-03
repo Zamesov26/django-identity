@@ -26,7 +26,7 @@ class AccessTokenService:
     """
     Сервис выпуска JWT access-токенов.
     """
-    
+
     @classmethod
     def issue(
         cls,
@@ -43,7 +43,7 @@ class AccessTokenService:
             load_private_key(),
             algorithm=settings.IDENTITY["JWT"]["ALGORITHM"],
         )
-    
+
     @classmethod
     def expires_at(cls) -> datetime:
         """
@@ -52,15 +52,15 @@ class AccessTokenService:
         return now() + timedelta(
             seconds=settings.IDENTITY["JWT"]["ACCESS_TTL"],
         )
-    
+
     @classmethod
     def _build_payload(
         cls,
         actor: ActorContext,
     ) -> dict:
-        
+
         expires_at = cls.expires_at()
-        
+
         return {
             "iss": settings.IDENTITY["JWT"]["ISSUER"],
             "aud": settings.IDENTITY["JWT"]["AUDIENCE"],

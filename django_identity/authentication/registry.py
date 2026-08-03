@@ -19,9 +19,7 @@ class AuthenticationProviderRegistry:
         provider: type[AuthenticationProvider],
     ) -> type[AuthenticationProvider]:
         if cls._provider is not None:
-            raise ImproperlyConfigured(
-                "Authentication provider is already registered."
-            )
+            raise ImproperlyConfigured("Authentication provider is already registered.")
 
         cls._provider = provider
         return provider
@@ -31,8 +29,6 @@ class AuthenticationProviderRegistry:
         cls,
     ) -> type[AuthenticationProvider]:
         if cls._provider is None:
-            raise ImproperlyConfigured(
-                "Authentication provider is not registered."
-            )
+            raise ImproperlyConfigured("Authentication provider is not registered.")
 
         return cls._provider

@@ -155,7 +155,7 @@ class IdentitySecurityEvent(models.Model):
     class Meta:
         verbose_name = "Событие безопасности"
         verbose_name_plural = "События безопасности"
-        
+
         indexes = [
             models.Index(fields=["event_type"]),
             models.Index(fields=["external_user_id"]),

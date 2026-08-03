@@ -9,51 +9,117 @@ from django_identity.models import (
 
 
 @admin.register(IdentityTrustedIssuer)
-class IdentityTrustedActorAdmin(admin.ModelAdmin):
+class IdentityTrustedIssuerAdmin(admin.ModelAdmin):
     list_display = (
         "issuer",
         "name",
-        "key_type",
+        "algorithm",
         "is_active",
         "allow_human",
         "allow_system",
         "updated_at",
     )
-    list_filter = ("key_type", "is_active", "allow_human", "allow_system")
-    search_fields = ("issuer", "name")
-    readonly_fields = ("created_at", "updated_at")
+
+    list_filter = (
+        "algorithm",
+        "is_active",
+        "allow_human",
+        "allow_system",
+    )
+
+    search_fields = (
+        "issuer",
+        "name",
+    )
+
+    readonly_fields = (
+        "created_at",
+        "updated_at",
+    )
+
+    ordering = ("issuer",)
+
+    fieldsets = (
+        (
+            None,
+            {
+                "fields": (
+                    "issuer",
+                    "name",
+                    "is_active",
+                ),
+            },
+        ),
+        (
+            "JWT validation",
+            {
+                "fields": (
+                    "algorithm",
+                    "public_key",
+                ),
+            },
+        ),
+        (
+            "Allowed actors",
+            {
+                "fields": (
+                    "allow_human",
+                    "allow_system",
+                ),
+            },
+        ),
+        (
+            "Service information",
+            {
+                "fields": (
+                    "created_at",
+                    "updated_at",
+                ),
+            },
+        ),
+    )
 
 
 @admin.register(IdentityRefreshToken)
 class IdentityRefreshTokenAdmin(admin.ModelAdmin):
     list_display = (
         "short_token",
-        "external_user_id",
+        "issuer",
+        "subject",
+        "actor_type",
         "is_active",
-        "is_expired",
+        "expired",
         "created_at",
         "expires_at",
     )
 
     list_filter = (
+        "actor_type",
         "is_active",
+        "issuer",
         "created_at",
         "expires_at",
     )
 
     search_fields = (
         "token",
-        "external_user_id",
+        "issuer",
+        "subject",
     )
 
     readonly_fields = (
         "token",
-        "external_user_id",
+        "issuer",
+        "subject",
+        "actor_type",
         "created_at",
         "expires_at",
+        "expired",
     )
 
     ordering = ("-created_at",)
+
+    actions = ("revoke_selected_tokens",)
 
     def has_add_permission(self, request):
         return False
@@ -62,13 +128,36 @@ class IdentityRefreshTokenAdmin(admin.ModelAdmin):
         return False
 
     @admin.display(description="Token")
-    def short_token(self, obj: IdentityRefreshToken) -> str:
-        # чтобы не светить весь токен
+    def short_token(
+        self,
+        obj: IdentityRefreshToken,
+    ) -> str:
+        if len(obj.token) <= 12:
+            return "••••••"
+
         return f"{obj.token[:6]}…{obj.token[-6:]}"
 
-    @admin.display(boolean=True, description="Expired")
-    def is_expired(self, obj: IdentityRefreshToken) -> bool:
+    @admin.display(
+        boolean=True,
+        description="Expired",
+    )
+    def expired(
+        self,
+        obj: IdentityRefreshToken,
+    ) -> bool:
         return obj.expires_at <= now()
+
+    @admin.action(description="Revoke selected refresh tokens")
+    def revoke_selected_tokens(
+        self,
+        request,
+        queryset,
+    ) -> None:
+        queryset.filter(
+            is_active=True,
+        ).update(
+            is_active=False,
+        )
 
 
 @admin.register(IdentitySecurityEvent)
@@ -78,6 +167,7 @@ class IdentitySecurityEventAdmin(admin.ModelAdmin):
         "event_type",
         "external_user_id",
         "ip_address",
+        "short_token",
         "short_user_agent",
     )
 
@@ -98,11 +188,21 @@ class IdentitySecurityEventAdmin(admin.ModelAdmin):
     readonly_fields = (
         "event_type",
         "external_user_id",
-        "token",
+        "masked_token",
         "ip_address",
         "user_agent",
         "extra",
         "created_at",
+    )
+
+    fields = (
+        "created_at",
+        "event_type",
+        "external_user_id",
+        "masked_token",
+        "ip_address",
+        "user_agent",
+        "extra",
     )
 
     def has_add_permission(self, request):
@@ -114,8 +214,35 @@ class IdentitySecurityEventAdmin(admin.ModelAdmin):
     def has_delete_permission(self, request, obj=None):
         return False
 
+    @admin.display(description="Token")
+    def short_token(
+        self,
+        obj: IdentitySecurityEvent,
+    ) -> str:
+        if not obj.token:
+            return "-"
+
+        if len(obj.token) <= 12:
+            return "••••••"
+
+        return f"{obj.token[:6]}…{obj.token[-6:]}"
+
+    @admin.display(description="Token")
+    def masked_token(
+        self,
+        obj: IdentitySecurityEvent,
+    ) -> str:
+        return self.short_token(obj)
+
     @admin.display(description="User agent")
-    def short_user_agent(self, obj):
+    def short_user_agent(
+        self,
+        obj: IdentitySecurityEvent,
+    ) -> str:
         if not obj.user_agent:
             return "-"
-        return obj.user_agent[:80] + ("…" if len(obj.user_agent) > 80 else "")
+
+        if len(obj.user_agent) <= 80:
+            return obj.user_agent
+
+        return f"{obj.user_agent[:80]}…"

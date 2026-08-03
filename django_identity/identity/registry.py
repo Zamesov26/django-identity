@@ -17,7 +17,7 @@ class IdentityProviderRegistry:
     def register(
         cls,
         provider: type[IdentityProvider],
-    )  -> type[IdentityProvider]:
+    ) -> type[IdentityProvider]:
         cls._providers[provider.scheme.lower()] = provider
         return provider
 

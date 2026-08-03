@@ -41,7 +41,8 @@ class CredentialExpired(AuthenticationError):
     """
 
     code = "credential_expired"
-    
+
+
 class InvalidRefreshToken(AuthenticationError):
     """
     Refresh-токен недействителен.
@@ -64,7 +65,7 @@ class InvalidCredentials(AuthenticationError):
     - неверный пароль;
     - пользователь не существует.
     """
-    
+
     code = "invalid_credentials"
 
 

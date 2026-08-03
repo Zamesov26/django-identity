@@ -28,9 +28,7 @@ class BaseAuthenticationProvider(AuthenticationProvider):
         )
 
         if user is None:
-            raise InvalidCredentials(
-                "Invalid username or password."
-            )
+            raise InvalidCredentials("Invalid username or password.")
 
         return ActorContext(
             actor_type="human",

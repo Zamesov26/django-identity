@@ -48,7 +48,7 @@ class RefreshTokenService:
         cls._revoke(refresh)
         new_refresh = cls.issue(refresh.actor)
         access = AccessTokenService.issue(refresh.actor)
-        
+
         return AuthTokens(
             access_token=access,
             refresh_token=new_refresh.token,
@@ -90,11 +90,7 @@ class RefreshTokenService:
     def _get_active(cls, token: str) -> IdentityRefreshToken:
 
         try:
-            refresh = (
-                IdentityRefreshToken.objects
-                .select_for_update()
-                .get(token=token)
-            )
+            refresh = IdentityRefreshToken.objects.select_for_update().get(token=token)
 
         except IdentityRefreshToken.DoesNotExist:
             raise InvalidRefreshToken(

@@ -9,7 +9,7 @@ class ActorContext:
 
     Представляет субъект, от имени которого выполняется запрос.
     """
-    
+
     actor_type: Literal["human", "system"]
     issuer: str
     subject: str | None
