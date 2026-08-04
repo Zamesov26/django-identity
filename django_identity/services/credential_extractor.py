@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.http import HttpRequest
 
 from django_identity.credentials import Credential
@@ -25,8 +26,19 @@ class CredentialExtractor:
             )
             if credential:
                 return credential
+            
+        access = request.COOKIES.get(
+            settings.IDENTITY["JWT"]["ACCESS_COOKIE_NAME"],
+        )
+
+        if access:
+            return Credential(
+                scheme="Bearer",
+                value=access,
+            )
 
         return None
+
 
     @staticmethod
     def _from_authorization_header(

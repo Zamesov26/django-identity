@@ -10,10 +10,14 @@ from django_identity.services.credential_extractor import CredentialExtractor
 
 class IdentityMiddleware:
     """
-    Определяет Identity и Actor для HTTP-запроса.
+    Выполняет идентификацию HTTP-запроса.
 
-    Не принимает решение о доступе и не нарушает стандартную
-    сессионную аутентификацию Django.
+    Middleware не принимает решение о предоставлении доступа.
+    При успешной идентификации заполняет request.identity,
+    request.actor и при необходимости request.user.
+
+    Если идентификация не удалась, информация об ошибке
+    сохраняется в request.identity_error.
     """
     
     def __init__(self, get_response):
@@ -39,8 +43,8 @@ class IdentityMiddleware:
             provider = IdentityProviderRegistry.get(credential)
             
             identity = provider.authenticate(
-                request,
-                credential,
+                request=request,
+                credential=credential,
             )
             
             request.identity = identity
@@ -55,6 +59,4 @@ class IdentityMiddleware:
             request.identity_error = exc
             request.identity_error_code = exc.code
             
-            # Сессионный request.user остаётся без изменений.
-        
         return self.get_response(request)

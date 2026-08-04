@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from django_identity.exceptions import InvalidCredentials, InvalidRefreshToken
+from django_identity.services.refresh_cookie import JWTCookie
 from django_identity.services.refresh_token import RefreshTokenService
 from users.identity.authentication import LoginService
 from users.identity.serializers import LoginSerializer
@@ -44,12 +45,8 @@ class LoginAPIView(APIView):
         },
     )
     def post(self, request):
-        serializer = LoginSerializer(
-            data=request.data,
-        )
-        serializer.is_valid(
-            raise_exception=True,
-        )
+        serializer = LoginSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
 
         try:
             tokens = LoginService.authenticate(
@@ -57,11 +54,6 @@ class LoginAPIView(APIView):
             )
 
         except InvalidCredentials:
-            #
-            # Здесь проект может писать аудит,
-            # отправлять события безопасности,
-            # увеличивать счетчик неудачных попыток и т.д.
-            #
             return Response(
                 {
                     "detail": "Invalid credentials.",
@@ -77,14 +69,14 @@ class LoginAPIView(APIView):
             status=status.HTTP_200_OK,
         )
 
-        response.set_cookie(
-            key="refresh",
-            value=tokens.refresh_token,
-            httponly=True,
-            secure=not settings.DEBUG,
-            samesite="Strict",
-            path="/api/v1/auth/",
-            max_age=settings.IDENTITY["JWT"]["REFRESH_TTL"],
+        JWTCookie.set_access(
+            response,
+            tokens.access_token,
+        )
+
+        JWTCookie.set_refresh(
+            response,
+            tokens.refresh_token,
         )
 
         return response
@@ -121,7 +113,10 @@ class RefreshAPIView(APIView):
         },
     )
     def post(self, request):
-        refresh_token = request.COOKIES.get("refresh")
+        refresh_token = request.COOKIES.get(
+            settings.IDENTITY["JWT"]["REFRESH_COOKIE_NAME"]
+        )
+        print(refresh_token)
 
         if refresh_token is None:
             return Response(
