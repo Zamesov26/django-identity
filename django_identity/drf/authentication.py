@@ -4,12 +4,12 @@ from rest_framework.authentication import BaseAuthentication
 class IdentityAuthentication(BaseAuthentication):
 
     def authenticate(self, request):
-        user = request._request.user
+        identity = getattr(request._request, "identity", None)
 
-        if not user.is_authenticated:
+        if identity is None:
             return None
 
         return (
-            user,
-            request._request.identity,
+            request._request.user,
+            identity,
         )

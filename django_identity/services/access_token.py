@@ -61,10 +61,14 @@ class AccessTokenService:
 
         expires_at = cls.expires_at()
 
-        return {
+        payload = {
             "iss": settings.IDENTITY["JWT"]["ISSUER"],
             "aud": settings.IDENTITY["JWT"]["AUDIENCE"],
-            "sub": actor.subject,
             "actor_type": actor.actor_type,
             "exp": expires_at,
         }
+
+        if actor.subject is not None:
+            payload["sub"] = actor.subject
+
+        return payload

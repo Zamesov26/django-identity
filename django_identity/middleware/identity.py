@@ -7,7 +7,6 @@ from django_identity.identity.user_resolver import get_user_resolver
 from django_identity.services.credential_extractor import CredentialExtractor
 
 
-
 class IdentityMiddleware:
     """
     Выполняет идентификацию HTTP-запроса.
@@ -49,11 +48,17 @@ class IdentityMiddleware:
             
             request.identity = identity
             request.actor = identity.actor
-            
-            user = get_user_resolver().resolve(identity)
-            
-            if user is not None:
-                request.user = user
+
+            # A verified identity must not inherit an unrelated session user.
+            # System actors intentionally remain anonymous, while human actors
+            # are bound only to the user returned by the configured resolver.
+            request.user = AnonymousUser()
+
+            if identity.actor.actor_type == "human":
+                user = get_user_resolver().resolve(identity)
+
+                if user is not None:
+                    request.user = user
         
         except IdentityError as exc:
             request.identity_error = exc

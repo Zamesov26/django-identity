@@ -17,6 +17,40 @@ REST_FRAMEWORK = {
    ...,
 }
 ```
+
+Системная identity считается успешно аутентифицированной на уровне DRF, но
+`request.user` для неё остаётся `AnonymousUser`. Поэтому стандартный
+`IsAuthenticated` разрешает только запросы с Django-пользователем. Доступ для
+системных акторов необходимо указывать явно:
+
+```python
+from django_identity.drf.permissions import (
+    IsHumanActor,
+    IsIdentityAuthenticated,
+    IsSystemActor,
+)
+
+
+class InternalAPIView(APIView):
+    permission_classes = [IsSystemActor]
+```
+
+Доступные permissions:
+
+- `IsIdentityAuthenticated` — любая проверенная identity;
+- `IsHumanActor` — human identity со связанным аутентифицированным пользователем;
+- `IsSystemActor` — system identity, пользователь и `sub` не требуются.
+
+JWT системного актора может не содержать `sub`:
+
+```json
+{
+  "iss": "PMC-JWT",
+  "aud": "TECH-API",
+  "actor_type": "system",
+  "exp": 1893456000
+}
+```
 ## Создать UserResolver
 ```python
 User = get_user_model()
