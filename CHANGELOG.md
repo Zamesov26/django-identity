@@ -7,6 +7,14 @@
 
 <!-- version list -->
 
+## v0.1.1 (2026-10-27)
+
+### Bug Fixes
+
+- **identity**: Instantiate configured user resolver
+  ([`11b455e`](https://github.com/Zamesov26/django-identity/commit/11b455e291d22cffe942a3ea1e20fae0368457e8))
+
+
 ## v0.1.0 (2026-10-27)
 
 - Initial Release
