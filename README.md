@@ -215,25 +215,53 @@ class CreateChecklistAPIView(APIView):
     required_identity_scopes = ["checklists.create"]
 ```
 
-## Создать UserResolver
+## Связывание Identity с Django User
+
+Сервис задаёт dotted path к классу resolver в настройках:
+
 ```python
-User = get_user_model()
+IDENTITY = {
+    "SERVICE_NAME": "checklists-api",
+    "JWT": {
+        "USER_RESOLVER": "apps.users.identity.user_resolver.DjangoUserResolver",
+        # Остальные настройки JWT.
+    },
+}
+```
+
+Указанный объект должен быть классом-наследником `UserResolver` с конструктором
+без обязательных аргументов. Библиотека создаёт новый экземпляр для каждого
+human-запроса и передаёт в `resolve()` уже проверенную `Identity`:
+
+```python
+from django.contrib.auth import get_user_model
+
+from django_identity.identity.identity import Identity
+from django_identity.identity.user_resolver import UserResolver
+
 
 class DjangoUserResolver(UserResolver):
-    
-    @classmethod
     def resolve(
-        cls,
+        self,
         identity: Identity,
-    ) -> User | None:
-        
-        if identity.actor.actor_type != "human":
+    ):
+        subject = identity.actor.subject
+
+        if not subject:
             return None
-        
-        return  User.objects.filter(
-            pk=identity.actor.subject,
+
+        user_model = get_user_model()
+
+        return user_model.objects.filter(
+            pk=subject,
+            is_active=True,
         ).first()
 ```
+
+`resolve()` возвращает Django User либо `None`, если пользователь не найден или
+не должен быть допущен. Middleware вызывает resolver только для
+`actor_type="human"`; system identity остаётся с `AnonymousUser`. Экземпляр не
+кэшируется и не разделяет изменяемое состояние между запросами.
 
 ## Управление subject
 ```python

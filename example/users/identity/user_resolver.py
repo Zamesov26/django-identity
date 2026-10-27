@@ -7,9 +7,8 @@ User = get_user_model()
 
 
 class DjangoUserResolver(UserResolver):
-    @classmethod
     def resolve(
-        cls,
+        self,
         identity: Identity,
     ) -> User | None:
 
