@@ -9,6 +9,7 @@ from django_identity.identity.base import IdentityProvider
 from django_identity.identity.identity import Identity
 from django_identity.identity.registry import IdentityProviderRegistry
 from django_identity.models import IdentityTrustedIssuer
+from django_identity.scopes import decode_scope
 
 
 @IdentityProviderRegistry.register
@@ -29,15 +30,28 @@ class JWTIdentityProvider(IdentityProvider):
         Проверяет JWT и возвращает Identity.
         """
 
+        cls._validate_token_type(credential.value)
         claims = cls._decode_unverified(credential.value)
         issuer = cls._get_trusted_issuer(claims)
         claims = cls._verify(credential.value, issuer)
+        cls._validate_scope(claims)
         actor = cls._build_actor(claims, issuer)
 
         return Identity(
             actor=actor,
             claims=claims,
         )
+
+    @staticmethod
+    def _validate_token_type(token: str) -> None:
+        """Проверить тип access-токена с поддержкой legacy JWT."""
+        try:
+            token_type = jwt.get_unverified_header(token).get("typ")
+        except jwt.PyJWTError as exc:
+            raise InvalidCredential(str(exc)) from exc
+
+        if token_type not in (None, "JWT", "at+jwt"):
+            raise InvalidCredential("Invalid token type.")
 
     @staticmethod
     def _decode_unverified(
@@ -77,7 +91,7 @@ class JWTIdentityProvider(IdentityProvider):
                 token,
                 key=issuer.public_key,
                 algorithms=[issuer.algorithm],
-                audience=settings.IDENTITY["JWT"]["AUDIENCE"],
+                audience=settings.IDENTITY["SERVICE_NAME"],
                 issuer=issuer.issuer,
                 options={
                     "require": [
@@ -127,3 +141,11 @@ class JWTIdentityProvider(IdentityProvider):
             issuer=claims["iss"],
             subject=subject,
         )
+
+    @staticmethod
+    def _validate_scope(claims: dict) -> None:
+        """Проверить формат необязательного claim `scope`."""
+        try:
+            decode_scope(claims.get("scope"))
+        except ValueError as exc:
+            raise InvalidCredential(str(exc)) from exc

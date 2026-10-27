@@ -67,6 +67,11 @@ class IdentityRefreshToken(models.Model):
     issuer = models.CharField(max_length=255, db_index=True)
     subject = models.CharField(max_length=255, db_index=True)
     actor_type = models.CharField(max_length=32)
+    scopes = models.JSONField(
+        default=list,
+        blank=True,
+        help_text="Scopes, сохраняемые при ротации refresh-токена.",
+    )
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     expires_at = models.DateTimeField()

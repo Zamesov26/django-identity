@@ -37,3 +37,20 @@ class IsSystemActor(BasePermission):
             and actor is not None
             and actor.actor_type == "system"
         )
+
+
+class HasRequiredScopes(BasePermission):
+    """Разрешить запрос при наличии всех scopes, требуемых представлением."""
+
+    def has_permission(self, request, view):
+        identity = getattr(request, "identity", None)
+        required_scopes = getattr(view, "required_identity_scopes", None)
+
+        if (
+            identity is None
+            or not isinstance(required_scopes, (list, tuple, set))
+            or not all(isinstance(scope, str) for scope in required_scopes)
+        ):
+            return False
+
+        return set(required_scopes).issubset(identity.scopes)

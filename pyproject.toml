@@ -1,12 +1,20 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "django-identity"
-version = "0.0.0"
+version = "0.1.0"
 authors = [
   { name="Oleg Zamesov", email="o.zamesov@yandex.ru" },
 ]
 description = "Custom django authorize"
 readme = "README.md"
 requires-python = ">=3.12,<3.13"
+dependencies = [
+    "Django>=5.2",
+    "PyJWT[crypto]>=2.13,<2.14",
+]
 classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: MIT License",
@@ -20,8 +28,30 @@ classifiers = [
 Homepage = "https://github.com/Zamesov26/django-identity"
 AuthorGitHub = "https://github.com/Zamesov26"
 
+[project.optional-dependencies]
+drf = [
+    "djangorestframework>=3.17,<3.18",
+]
+dev = [
+    "djangorestframework>=3.17,<3.18",
+    "python-semantic-release>=10.7,<11",
+    "pytest>=9.1,<10",
+    "pytest-django>=4.12,<5",
+    "ruff==0.16.1",
+]
+example = [
+    "djangorestframework>=3.17,<3.18",
+    "drf-spectacular==0.28.0",
+    "drf-spectacular-sidecar==2025.2.1",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["django_identity*"]
+
 [tool.ruff]
 line-length = 88
+src = ["src", "tests"]
 extend-exclude = [
     "**/__pycache__/**",
     ".venv/",
@@ -41,6 +71,13 @@ select = [
     "SIM", # flake8-simplify
     "I", # isort
     "C", # flake8-comprehensions
+    "PT", # flake8-pytest-style
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = [
+    "D100",
+    "D104",
 ]
 
 [tool.ruff.format]
@@ -52,3 +89,19 @@ line-ending = "lf"
 docstring-quotes = "double"
 inline-quotes = "double"
 multiline-quotes = "double"
+
+[tool.semantic_release]
+commit_parser = "conventional"
+version_toml = ["pyproject.toml:project.version"]
+tag_format = "v{version}"
+allow_zero_version = true
+major_on_zero = false
+commit_message = "chore(release): {version}"
+
+[tool.semantic_release.branches.main]
+match = "main"
+prerelease = false
+
+[tool.semantic_release.changelog.default_templates]
+changelog_file = "CHANGELOG.md"
+output_format = "md"

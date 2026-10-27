@@ -1,6 +1,7 @@
 .venv
 .idea
 /dist/
+/build/
 /src/test.py
 db.*
 keys/

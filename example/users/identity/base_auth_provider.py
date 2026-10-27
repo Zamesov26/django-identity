@@ -32,6 +32,6 @@ class BaseAuthenticationProvider(AuthenticationProvider):
 
         return ActorContext(
             actor_type="human",
-            issuer=settings.IDENTITY["JWT"]["AUDIENCE"],
+            issuer=settings.IDENTITY["SERVICE_NAME"],
             subject=str(user.pk),
         )

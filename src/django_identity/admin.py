@@ -112,6 +112,7 @@ class IdentityRefreshTokenAdmin(admin.ModelAdmin):
         "issuer",
         "subject",
         "actor_type",
+        "scopes",
         "created_at",
         "expires_at",
         "expired",

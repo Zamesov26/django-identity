@@ -133,9 +133,8 @@ REST_FRAMEWORK = {
 }
 
 IDENTITY = {
+    "SERVICE_NAME": os.getenv("SERVICE_NAME", "some-django-service"),
     "JWT": {
-        "ISSUER": "planner-backend",
-        "AUDIENCE": "planner-backend",
         "USER_RESOLVER": "users.identity.user_resolver.DjangoUserResolver",
         "ACCESS_COOKIE_PATH": "/api/",
         "ACCESS_COOKIE_NAME": "access",

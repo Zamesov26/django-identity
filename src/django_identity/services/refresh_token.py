@@ -8,6 +8,7 @@ from django.utils.timezone import now
 from django_identity.actor import ActorContext
 from django_identity.exceptions import InvalidRefreshToken
 from django_identity.models import IdentityRefreshToken
+from django_identity.scopes import encode_scopes
 from django_identity.services.access_token import AccessTokenService
 from django_identity.tokens import AuthTokens
 
@@ -22,15 +23,24 @@ class RefreshTokenService:
     """
 
     @classmethod
-    def issue(cls, actor: ActorContext) -> IdentityRefreshToken:
+    def issue(
+        cls,
+        actor: ActorContext,
+        *,
+        scopes: list[str] | None = None,
+    ) -> IdentityRefreshToken:
         """
         Выпускает новый refresh-токен.
         """
+        scopes = [] if scopes is None else scopes
+        encode_scopes(scopes)
+
         return IdentityRefreshToken.objects.create(
             token=secrets.token_urlsafe(48),
             issuer=actor.issuer,
             subject=actor.subject,
             actor_type=actor.actor_type,
+            scopes=list(scopes),
             expires_at=cls._expires_at(),
         )
 
@@ -46,8 +56,8 @@ class RefreshTokenService:
         refresh = cls._get_active(token)
 
         cls._revoke(refresh)
-        new_refresh = cls.issue(refresh.actor)
-        access = AccessTokenService.issue(refresh.actor)
+        new_refresh = cls.issue(refresh.actor, scopes=refresh.scopes)
+        access = AccessTokenService.issue(refresh.actor, scopes=refresh.scopes)
 
         return AuthTokens(
             access_token=access,

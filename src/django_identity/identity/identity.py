@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from typing import Any
 
 from django_identity.actor import ActorContext
+from django_identity.scopes import decode_scope
 
 
 @dataclass(slots=True)
@@ -28,3 +29,8 @@ class Identity:
 
     actor: ActorContext
     claims: dict[str, Any]
+
+    @property
+    def scopes(self) -> list[str]:
+        """Вернуть список scopes из проверенного JWT claim `scope`."""
+        return decode_scope(self.claims.get("scope"))
