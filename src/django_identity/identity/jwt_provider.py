@@ -94,6 +94,7 @@ class JWTIdentityProvider(IdentityProvider):
                 audience=settings.IDENTITY["SERVICE_NAME"],
                 issuer=issuer.issuer,
                 options={
+                    "verify_iat": False,
                     "require": [
                         "exp",
                         "iss",

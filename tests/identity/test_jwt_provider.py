@@ -1,3 +1,4 @@
+from datetime import UTC, datetime, timedelta
 from types import SimpleNamespace
 
 import jwt
@@ -7,7 +8,7 @@ from cryptography.hazmat.primitives.asymmetric import rsa
 from django.test import RequestFactory
 
 from django_identity.credentials import Credential
-from django_identity.exceptions import InvalidCredential
+from django_identity.exceptions import CredentialExpired, InvalidCredential
 from django_identity.identity.identity import Identity
 from django_identity.identity.jwt_provider import JWTIdentityProvider
 
@@ -99,6 +100,62 @@ class TestJWTIdentityProvider:
         assert identity.actor.actor_type == "system"
         assert identity.actor.subject is None
         assert "sub" not in identity.claims
+
+    def test_accepts_token_issued_in_future_when_server_clock_lags(
+        self,
+        settings,
+    ) -> None:
+        """Не проверять нижнюю границу времени по claim `iat`."""
+        settings.IDENTITY = {
+            **settings.IDENTITY,
+            "SERVICE_NAME": "TECH-API",
+        }
+        now = datetime.now(UTC)
+        token = jwt.encode(
+            {
+                "iss": "PMC-JWT",
+                "aud": "TECH-API",
+                "iat": now + timedelta(minutes=7),
+                "exp": now + timedelta(minutes=17),
+            },
+            TEST_HMAC_KEY,
+            algorithm="HS256",
+        )
+        issuer = SimpleNamespace(
+            issuer="PMC-JWT",
+            public_key=TEST_HMAC_KEY,
+            algorithm="HS256",
+        )
+
+        claims = JWTIdentityProvider._verify(token, issuer)
+
+        assert claims["iss"] == "PMC-JWT"
+
+    def test_still_rejects_expired_token(self, settings) -> None:
+        """Продолжать проверять верхнюю границу времени по claim `exp`."""
+        settings.IDENTITY = {
+            **settings.IDENTITY,
+            "SERVICE_NAME": "TECH-API",
+        }
+        now = datetime.now(UTC)
+        token = jwt.encode(
+            {
+                "iss": "PMC-JWT",
+                "aud": "TECH-API",
+                "iat": now - timedelta(minutes=17),
+                "exp": now - timedelta(minutes=7),
+            },
+            TEST_HMAC_KEY,
+            algorithm="HS256",
+        )
+        issuer = SimpleNamespace(
+            issuer="PMC-JWT",
+            public_key=TEST_HMAC_KEY,
+            algorithm="HS256",
+        )
+
+        with pytest.raises(CredentialExpired):
+            JWTIdentityProvider._verify(token, issuer)
 
     def test_exposes_scope_claim_as_list(
         self,
