@@ -7,6 +7,14 @@
 
 <!-- version list -->
 
+## v0.1.2 (2026-11-03)
+
+### Bug Fixes
+
+- Allow JWTs issued ahead of server clock
+  ([`727a0a8`](https://github.com/Zamesov26/django-identity/commit/727a0a87d8e862c932e0f645116f756a80754f36))
+
+
 ## v0.1.1 (2026-10-27)
 
 ### Bug Fixes
